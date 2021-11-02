@@ -35,7 +35,7 @@ class TransactionService
         try {
             $this->accountService->decreaseBalance($payerId, $value);
             $this->accountService->increaseBalance($payeeId, $value);
-            $transactionId = $this->repository->SaveTransaction($payerId, $payeeId, $value);
+            $transactionId = $this->repository->saveTransaction($payerId, $payeeId, $value);
             DB::commit();
         }
         catch(\Exception $e)
@@ -56,7 +56,40 @@ class TransactionService
 
     public function revertTransaction(int $transactionId): JsonResponse
     {
-        return new JsonResponse("",200);
+        if(!$this->repository->hasTransaction($transactionId))
+            return new JsonResponse([
+                "code" => "TransactionNotFoundException",
+                "message" => "transaction does not exists"
+            ], 404);
+
+        $transaction = $this->repository->getTransaction($transactionId);
+
+        $payerVerified = $this->accountService->validatePayer($transaction->payer->id, $transaction->value, true);
+        if(!empty($payerVerified))
+            return new JsonResponse($payerVerified, 400);
+
+        $payeeVerified = $this->accountService->validatePayee($transaction->payee->id);
+        if(!empty($payeeVerified))
+            return new JsonResponse($payeeVerified, 400);
+
+        $authorization = $this->authorizeTransaction($transaction->payer->id, $transaction->payee->id, $transaction->value);
+        if(!empty($authorization))
+            return new JsonResponse($authorization, 400);
+
+        DB::beginTransaction();
+        try {
+            $this->accountService->decreaseBalance($transaction->payee->id, $transaction->value);
+            $this->accountService->increaseBalance($transaction->payer->id, $transaction->value);
+            $this->repository->deleteTransaction($transactionId);
+            DB::commit();
+        }
+        catch(\Exception $e)
+        {
+            DB::rollBack();
+            throw $e;
+        }
+
+        return new JsonResponse(["message" => "Success"],200);
     }
 
     private function authorizeTransaction(int $payerId, int $payeeId, float $value): array

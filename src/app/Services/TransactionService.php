@@ -64,22 +64,22 @@ class TransactionService
 
         $transaction = $this->repository->getTransaction($transactionId);
 
-        $payerVerified = $this->accountService->validatePayer($transaction->payer->id, $transaction->value, true);
+        $payerVerified = $this->accountService->validatePayer($transaction->payer, $transaction->value, true);
         if(!empty($payerVerified))
             return new JsonResponse($payerVerified, 400);
 
-        $payeeVerified = $this->accountService->validatePayee($transaction->payee->id);
+        $payeeVerified = $this->accountService->validatePayee($transaction->payee);
         if(!empty($payeeVerified))
             return new JsonResponse($payeeVerified, 400);
 
-        $authorization = $this->authorizeTransaction($transaction->payer->id, $transaction->payee->id, $transaction->value);
+        $authorization = $this->authorizeTransaction($transaction->payer, $transaction->payee, $transaction->value);
         if(!empty($authorization))
             return new JsonResponse($authorization, 400);
 
         DB::beginTransaction();
         try {
-            $this->accountService->decreaseBalance($transaction->payee->id, $transaction->value);
-            $this->accountService->increaseBalance($transaction->payer->id, $transaction->value);
+            $this->accountService->decreaseBalance($transaction->payee, $transaction->value);
+            $this->accountService->increaseBalance($transaction->payer, $transaction->value);
             $this->repository->deleteTransaction($transactionId);
             DB::commit();
         }

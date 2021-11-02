@@ -17,6 +17,6 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-$router->get('transaction', 'TransactionController@transfer');
-$router->get('revertTransaction', 'TransactionController@revertTransaction');
+$router->post('transaction', 'TransactionController@transfer');
+$router->post('revertTransaction', 'TransactionController@revertTransaction');
 

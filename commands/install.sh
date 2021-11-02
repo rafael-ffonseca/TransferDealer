@@ -1,6 +1,6 @@
-apt update
-apt install -y git
-apt install -y zip
+apt-get update
+apt-get install -y git
+apt-get install -y zip
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 php composer-setup.php
 mv composer.phar /usr/local/bin/composer

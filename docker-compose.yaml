@@ -1,0 +1,11 @@
+version: "3.8"
+ 
+services:
+    php:
+        image: php:7.4-fpm  
+        container_name: transfer-dealer
+        volumes:
+            - ./:/TransferDealer
+        command: /TransferDealer/commands/install.sh
+        ports:
+            - "80:80"

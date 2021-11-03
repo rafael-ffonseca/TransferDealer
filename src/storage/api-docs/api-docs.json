@@ -1,0 +1,224 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "TransferDealer API",
+        "contact": {
+            "name": "Rafael Fonseca",
+            "email": "rafaelff159@gmail.com"
+        },
+        "version": "1.0"
+    },
+    "paths": {
+        "/transaction": {
+            "post": {
+                "tags": [
+                    "Transaction"
+                ],
+                "operationId": "/transaction",
+                "parameters": [
+                    {
+                        "name": "payer",
+                        "in": "query",
+                        "description": "The payer account id who balance will be decreased",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "payee",
+                        "in": "query",
+                        "description": "The payee account id who balance will be increased",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "in": "query",
+                        "description": "The amount that will be transferred",
+                        "required": true,
+                        "schema": {
+                            "type": "number"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns Success for the transaction",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        },
+                                        "transactionId": {
+                                            "type": "integer"
+                                        },
+                                        "warning": {
+                                            "type": "string",
+                                            "example": "Filled when any notice occurs in the transaction"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error: Transaction is not able to be completed. Check errors bellow",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": [
+                                                "PayerNotFoundException",
+                                                "PayerIsNotUserException",
+                                                "PayerInsufficientBalanceException",
+                                                "PayeeNotFoundException",
+                                                "UnauthorizedTransactionException",
+                                                "AuthorizationServiceUnavailableException"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": [
+                                                "payer not found",
+                                                "only users can be payer",
+                                                "payer does not have enough balance for the transaction",
+                                                "payee not found",
+                                                "transaction unauthorized by authorization service",
+                                                "transaction cannot be processed by authorization service"
+                                            ]
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error: Bad request. When required parameters were not supplied.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "payer": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "payer validation errors"
+                                            }
+                                        },
+                                        "payee": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "payee validation errors"
+                                            }
+                                        },
+                                        "value": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "value validation errors"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/revertTransaction": {
+            "post": {
+                "tags": [
+                    "Transaction"
+                ],
+                "operationId": "/revertTransaction",
+                "parameters": [
+                    {
+                        "name": "transactionId",
+                        "in": "query",
+                        "description": "The transaction id to be reverted",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns Success for the revert",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error: Transaction revert is not able to be completed. Check errors bellow",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": [
+                                                "TransactionNotFoundException",
+                                                "PayerInsufficientBalanceException"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": [
+                                                "transaction does not exists",
+                                                "payer does not have enough balance for the transaction"
+                                            ]
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error: Bad request. When required parameters were not supplied.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "transactionId": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "transaction id validation errors"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

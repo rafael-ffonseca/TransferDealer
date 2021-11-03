@@ -45,7 +45,7 @@ class TransactionService
         }
 
         $messages["message"] = "Success";
-        $messages["transaction"] = ["id" => $transactionId];
+        $messages["transactionId"] = $transactionId;
 
         $notifyTransaction = $this->notifyTransaction($payerId, $payeeId, $value);
         if(!empty($notifyTransaction))
@@ -60,7 +60,7 @@ class TransactionService
             return new JsonResponse([
                 "code" => "TransactionNotFoundException",
                 "message" => "transaction does not exists"
-            ], 404);
+            ], 400);
 
         $transaction = $this->repository->getTransaction($transactionId);
 
@@ -71,10 +71,6 @@ class TransactionService
         $payeeVerified = $this->accountService->validatePayee($transaction->payee);
         if(!empty($payeeVerified))
             return new JsonResponse($payeeVerified, 400);
-
-        $authorization = $this->authorizeTransaction($transaction->payer, $transaction->payee, $transaction->value);
-        if(!empty($authorization))
-            return new JsonResponse($authorization, 400);
 
         DB::beginTransaction();
         try {
@@ -116,23 +112,17 @@ class TransactionService
         return [];
     }
 
-    private function notifyTransaction(int $payerId, int $payeeId, float $value): array
+    private function notifyTransaction(int $payerId, int $payeeId, float $value): string
     {
         try {
             $authorization = Http::timeout(15)->retry(3, 100)->get('http://o4d9z.mocklab.io/notify');
             if(!$authorization->successful() || $authorization['message'] != 'Success')
-                return [
-                    "code" => "TransactionNotNotifiedException",
-                    "message" => "transaction cannot be notified at this time"
-                ];
+                return "TransactionNotNotifiedException: transaction cannot be notified at this time";
         }
         catch(\Exception $e)
         {
-            return [
-                "code" => "NotifyServiceUnavailableException",
-                "message" => "transaction cannot be processed by notify service"
-            ];
+            return "NotifyServiceUnavailableException: transaction cannot be processed by notify service";
         }
-        return [];
+        return "";
     }
 }

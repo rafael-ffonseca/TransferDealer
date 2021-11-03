@@ -13,26 +13,26 @@ class AccountRepository
         $this->model = $model;
     }
 
-    public function getAccount(int $id): Account
+    public function getAccount(int $accountId): Account
     {
-        return $this->model->find($id);
+        return $this->model->find($accountId);
     }
 
-    public function hasAccount(int $id): bool
+    public function hasAccount(int $accountId): bool
     {
-        return $this->model->find($id) == true;
+        return $this->model->find($accountId) == true;
     }
 
-    public function increaseBalance(int $id, float $value): void
+    public function increaseBalance(int $accountId, float $value): void
     {
-        $account = $this->getAccount($id);
+        $account = $this->getAccount($accountId);
         $account->balance += $value;
         $account->save();
     }
 
-    public function decreaseBalance(int $id, float $value): void
+    public function decreaseBalance(int $accountId, float $value): void
     {
-        $account = $this->getAccount($id);
+        $account = $this->getAccount($accountId);
         $account->balance -= $value;
         $account->save();
     }

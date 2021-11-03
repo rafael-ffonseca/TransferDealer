@@ -44,10 +44,11 @@ class TransactionService
             throw $e;
         }
 
+        $messages = [];
         $messages["message"] = "Success";
         $messages["transactionId"] = $transactionId;
 
-        $notifyTransaction = $this->notifyTransaction($payerId, $payeeId, $value);
+        $notifyTransaction = $this->notifyTransaction();
         if(!empty($notifyTransaction))
             $messages["warning"] = $notifyTransaction;
 
@@ -112,7 +113,7 @@ class TransactionService
         return [];
     }
 
-    private function notifyTransaction(int $payerId, int $payeeId, float $value): string
+    private function notifyTransaction(): string
     {
         try {
             $authorization = Http::timeout(15)->retry(3, 100)->get('http://o4d9z.mocklab.io/notify');
